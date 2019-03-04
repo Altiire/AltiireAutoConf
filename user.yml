@@ -6,9 +6,9 @@
 
   tasks:
     ## Instaling packages
-    - name: Installing sudo, zsh and git
+    - name: Installing base packages
       apt:
-        pkg=sudo,zsh,git,vim-nox
+        pkg=sudo,zsh,git,vim-nox,build-essential,python,python-dev,cmake
         state=latest
       register: installation
 
@@ -69,6 +69,7 @@
         name: user.name
         scope: global
         value: Raphaël Caruso
+      when: create is success
       become: yes
       become_user: "{{ user }}"
 
@@ -77,6 +78,7 @@
         name: user.email
         scope: global
         value: altiire@gmail.com
+      when: create is success
       become: yes
       become_user: "{{ user }}"
 
@@ -85,6 +87,7 @@
         name: core.editor
         scope: global
         value: vim
+      when: create is success
       become: yes
       become_user: "{{ user }}"
 
@@ -93,6 +96,7 @@
         name: push.default
         scope: global
         value: matching
+      when: create is success
       become: yes
       become_user: "{{ user }}"
 
@@ -101,6 +105,7 @@
         name: color.ui
         scope: global
         value: auto
+      when: create is success
       become: yes
       become_user: "{{ user }}"
 
@@ -109,11 +114,37 @@
         name: pull.rebase
         scope: global
         value: true
+      when: create is success
       become: yes
       become_user: "{{ user }}"
 
-    ## Configure .vimrc
+    ## Configure Vim
     - name:
       get_url:
         url: https://raw.githubusercontent.com/Altiire/AltiireAutoConf/master/files/vimrc
-        dest: /home/"{{ user }}"/.vimrc
+        dest: ~/.vimrc
+      when: create is success
+      become: yes
+      become_user: "{{ user }}"
+
+    - name: Cloning Vundle
+      git:
+        repo=https://github.com/VundleVim/Vundle.vim.git
+        dest=~/.vim/bundle/Vundle.vim
+      when: create is success
+      register: clone_vundle
+      become: yes
+      become_user: "{{ user }}"
+
+    - name: Install Vundle
+      shell: vim -E -s -c "source ~/.vimrc" -c PluginInstall -c qall
+      when: clone_vundle is success
+      register: install_vundle
+      become: yes
+      become_user: "{{ user }}"
+
+    - name: Configure YouCompleteMe
+      shell: python ~/.vim/bundle/YouCompleteMe/install.py --clang-completer
+      when: install_vundle is success
+      become: yes
+      become_user: "{{ user }}"
