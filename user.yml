@@ -8,7 +8,7 @@
     ## Instaling packages
     - name: Installing sudo, zsh and git
       apt:
-        pkg=sudo,zsh,git
+        pkg=sudo,zsh,git,vim-nox
         state=latest
       register: installation
 
@@ -111,3 +111,9 @@
         value: true
       become: yes
       become_user: "{{ user }}"
+
+    ## Configure .vimrc
+    - name:
+      get_url:
+        url: https://raw.githubusercontent.com/Altiire/AltiireAutoConf/master/files/vimrc
+        dest: /home/"{{ user }}"/.vimrc
