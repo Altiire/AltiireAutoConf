@@ -24,7 +24,8 @@
       authorized_key:
         user: "{{ user }}"
         state: present
-        key: "{{ lookup('file', '/home/altiire/.ssh/id_rsa.pub') }}"
+        key: https://raw.githubusercontent.com/Altiire/AltiireAutoConf/master/files/altiire.pub
+
       when: create is success
 
     - name: Allow {{ user }} to have passwordless sudo
