@@ -1,0 +1,57 @@
+- hosts: all
+  user: root
+  vars:
+    user: altiire
+    password: $6$3sfn/KljzirbhMWu$.QvnVqrfV4a8/1YShi9HyzK1qAonQsKYP0if2qm6niXdJn7jhdWC2T4HFM9Wtd489IF.AjswGckjG.GjBzJf3/
+
+  tasks:
+    - name: Installing sudo, zsh and git
+      apt:
+        pkg=sudo,zsh,git
+        state=latest
+      register: installation
+
+    - name: Create user {{ user }}
+      user:
+        name={{ user }}
+        password={{ password }}
+        groups=sudo
+        shell=/bin/zsh
+      when: installation is success
+      register: create
+
+    - name: Set authorized key
+      authorized_key:
+        user: "{{ user }}"
+        state: present
+        key: "{{ lookup('file', '/home/altiire/.ssh/id_rsa.pub') }}"
+      when: create is success
+
+    - name: Allow {{ user }} to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^{{ user }}'
+        line: '{{ user }} ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+      when: create is success
+
+    - name: Backing up existing ~/.zshrc
+      shell: if [ -f ~/.zshrc ]; then mv ~/.zshrc ~/.zshrc.old; fi
+      when: create is success
+      become: "{{ user }}"
+
+    - name: Cloning oh-my-zsh
+      git:
+        repo=https://github.com/robbyrussell/oh-my-zsh
+        dest=~/.oh-my-zsh
+      when: create is success
+      register: ohmyzsh
+      become: "{{ user }}"
+
+    - name: Creating new ~/.zshrc
+      copy:
+        src=~/.oh-my-zsh/templates/zshrc.zsh-template
+        dest=~/.zshrc
+      when: ohmyzsh is success
+      become: "{{ user }}"
