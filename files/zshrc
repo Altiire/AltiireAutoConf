@@ -1,0 +1,40 @@
+# Path to your oh-my-zsh configuration.
+ZSH=$HOME/.oh-my-zsh
+ZSH_THEME="dethi"
+
+source $ZSH/oh-my-zsh.sh
+
+export EDITOR="vim"
+export NNTPSERVER="news.epita.fr"
+export PATH="/usr/local/sbin:$PATH"
+export PATH="/home/altiire/.bin:$PATH"
+
+# Alias
+alias avenv="source ./env/bin/activate"
+alias rmpyc="find . \( -name \"*.pyc\" -or -name \"__pycache__\" \) -delete"
+alias gds="git diff --staged"
+
+alias rsync="rsync -havzP --exclude='*.o' --exclude='*.so' --exclude='.git'"
+alias tmux="tmux -2"
+alias lynx="lynx -useragent='Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0 Iceweasel/38.6.0'"
+alias weather="curl wttr.in"
+
+alias epigcc="gcc -std=c99 -pedantic -Wall -Wextra -g"
+alias epig++="g++ -std=c++14 -pedantic -Wall -Wextra -g"
+
+# Env file
+if [ -f $HOME/.env ]; then
+    source $HOME/.env
+fi
+
+if [ -f $HOME/.tiny-care-terminal.env ]; then
+    source $HOME/.tiny-care-terminal.env
+fi
+
+[ -n "$XTERM_VERSION" ] && transset-df -a > /dev/null
+function gi() { curl -L -s https://www.gitignore.io/api/$@ ;}
+
+transfer() { if [ $# -eq 0 ]; then echo -e "No arguments specified. Usage:\necho transfer /tmp/test.md\ncat /tmp/test.md | transfer test.md"; return 1; fi
+tmpfile=$( mktemp -t transferXXX ); if tty -s; then basefile=$(basename "$1" | sed -e 's/[^a-zA-Z0-9._-]/-/g'); curl --progress-bar --upload-file "$1" "https://transfer.sh/$basefile" >> $tmpfile; else curl --progress-bar --upload-file "-" "https://transfer.sh/$1" >> $tmpfile ; fi; cat $tmpfile; rm -f $tmpfile; }
+
+backupMaBoxPhoto() { ssh maboxphoto.fr pg_dump --dbname=postgresql://maboxphoto:ook0uaSh@127.0.0.1:5432/maboxphoto | pv | ssh 192.168.1.17 cat ">" maboxphoto.bk }
