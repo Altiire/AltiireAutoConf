@@ -55,10 +55,18 @@
       become: yes
       become_user: "{{ user }}"
 
+    - name: Add zsh theme
+      get_url:
+        url: https://raw.githubusercontent.com/Altiire/AltiireAutoConf/master/files/dethi.zsh-theme
+        dest: ~/.oh-my-zsh/themes/dethi.zsh-theme
+      when: ohmyzsh is success
+      become: yes
+      become_user: "{{ user }}"
+
     - name: Creating new ~/.zshrc
-      copy:
-        src=~/.oh-my-zsh/templates/zshrc.zsh-template
-        dest=~/.zshrc
+      get_url:
+        url: https://raw.githubusercontent.com/Altiire/AltiireAutoConf/master/files/zshrc
+        dest: ~/.zshrc
       when: ohmyzsh is success
       become: yes
       become_user: "{{ user }}"
@@ -119,7 +127,7 @@
       become_user: "{{ user }}"
 
     ## Configure Vim
-    - name:
+    - name: Download vimrc
       get_url:
         url: https://raw.githubusercontent.com/Altiire/AltiireAutoConf/master/files/vimrc
         dest: ~/.vimrc
@@ -146,5 +154,14 @@
     - name: Configure YouCompleteMe
       shell: python ~/.vim/bundle/YouCompleteMe/install.py --clang-completer
       when: install_vundle is success
+      register: youcompleteme
+      become: yes
+      become_user: "{{ user }}"
+
+    - name: Add ycm_extra_conf
+      get_url:
+        url: https://raw.githubusercontent.com/Altiire/AltiireAutoConf/master/files/ycm_extra_conf.py
+        dest: ~/.vim/.ycm_extra_conf.py
+      when: youcompleteme is success
       become: yes
       become_user: "{{ user }}"
